@@ -1,211 +1,192 @@
-"""
-1. Напишите функцию (F): на вход список имен и целое число N;
-   на выходе список длины N случайных имен из первого списка
-   (могут повторяться, можно взять значения: количество имен 20, N = 100,
-   рекомендуется использовать функцию random);
+from datetime import datetime
+import copy
 
-2. Напишите функцию вывода самого частого имени из списка на выходе функции F;
+inputFile = "C:\\PythonDrom\\Tests_2022\\xxxTests\\logFile.txt"
 
-3. Напишите функцию вывода самой редкой буквы,
-   с которого начинаются имена в списке на выходе функции F.
+class LogsOrder:
+    indexedStrDate = []
+    newOrderedStrDate = []
+    lstRealDate = []
+    indexedRealDate = []
 
-"""
-import random
+    lstStr = None
 
-from functools import reduce
+    # ========================================================================
+    # функция для изменения порядка в проиндексированном списке логов
+    @staticmethod
+    def NewOrder():
+        for ird in LogsOrder.indexedRealDate:
+            for isd in LogsOrder.indexedStrDate:
+                if isd[0] == ird[0]:
+                    LogsOrder.newOrderedStrDate.append(copy.copy(isd[1]))
+                    LogsOrder.indexedStrDate.remove(isd)
+                    break
 
+    # ======================== quick_sort временного списка ==================
+    # Быстрая сортировка начинается с разбиения списка и выбора
+    # одного из элементов в качестве опорного. А всё остальное передвигается так,
+    # чтобы этот элемент встал на своё место. Все элементы меньше опорного
+    # перемещаются влево, а равные и большие элементы перемещаются вправо.
+    # Способ разбиения списка, который здесь реализован, соответствует схеме
+    # Хоара (создателя этого алгоритма).
+    # ========================================================================
+    @staticmethod
+    def partition(indexedRealData, low, high):
+        # В качестве опорного элемента выбирается средний элемент в списке.
+        # Также в качестве опорного возможен выбор первого, последнего или
+        # произвольного элементов
 
-names = {
-    'Каликс': 'самый_красивый', 'Адолфус': 'благородный_волк', 'Регулус': 'правильный',
-    'Рогэтус': 'желаемый', 'Ренэтус': 'заново_рождённый', 'Кастор': 'бобер',
-    'Ролло': 'знаменитый_волк', 'Ромулус': 'из_Рима_брат_Рема', 'Акуила': 'орёл', 'Руф': 'рыжий',
-    'Рем': 'из_Рима_брат_Ромулуса', 'Кастул': 'разрушитель', 'Рэмирус': 'мудрый',
-    'Климент': 'милостивый', 'Северин': 'строгий', 'Антониус': 'неоценимый', 'Аппиус': 'резкий',
-    'Сильвестр': 'лесной', 'Стратор': 'воин', 'Тибериус': 'из_реки_Тибр',
-    'Уалентин': 'сильный', 'Улисс': 'сердитый', 'Фиделис': 'верный', 'Цезарь': 'волосатый',
-    'Эмилий': 'усердный', 'Прискус': 'древний',
-    'Ленора':'дочь_льва', 'Люция': 'светлая', 'Грация': 'прелестная', 'Глория': 'слава',
-    'Фелицата': 'счастливая', 'Флора': 'цветок', 'Херта': 'сильная',
-    'Аккэлия': 'волчица', 'Патриция': 'знатная'
-}
+        pivot = indexedRealData[(low + high) // 2]
+        i = low - 1
+        j = high + 1
+        while True:
+            i += 1
+            while (indexedRealData[i])[1] < pivot[1]:
+                i += 1
 
-# def getNamesList (pairs, N = 100):
-#
-#     for n in range(0, N):
-#         print(n, ': ', random.choice(pairs))
+            j -= 1
+            while (indexedRealData[j])[1] > pivot[1]:
+                j -= 1
 
-# типа с lambda'ой проще,чем с getNamesList??? да ну!
-printNames = lambda p, i: f'{i}, ": ", {p}'
+            if i >= j:
+                return j
 
-def fun_0(N = 100):
-    print(f'\nfun_0n:')
+            # Если элемент с индексом i (слева от опорного) больше, чем
+            # элемент с индексом j (справа от опорного) - они меняются местами
+            indexedRealData[i], indexedRealData[j] = indexedRealData[j], indexedRealData[i]
 
-    # работа непосредственно со словарём - 1
-    # lNames = list(names)    # словарь -> список ключей словаря
-    # for i in range(0, len(lNames)):
-    #     nm = lNames[i]
-    #     print(f'{nm}, {names[nm]}')
+    @staticmethod
+    def quick_sort(indexedRealData):
+        # Вспомогательная функция. Вызывается рекурсивно
+        def _quick_sort(items, low, high):
+            if low < high:
+                # This is the index after the pivot, where our lists are split
+                split_index = LogsOrder.partition(items, low, high)
+                _quick_sort(items, low, split_index)
+                _quick_sort(items, split_index + 1, high)
 
-    # работа непосредственно со словарём - 2
-    # keys = names.keys()  # словарь -> список ключей словаря
-    # for k in keys:
-    #     print(f'{k}, {names[k]}')
+        _quick_sort(indexedRealData, 0, len(indexedRealData) - 1)
 
+        return indexedRealData
 
-    # С помощью выражения списка можно на основе словаря сформировать список пар
-    # (список списков), где ключ и значение в паре перестают играть роль 'ключ-значение',
-    # а становятся "равноправными" членами списка, к которым можно обращаться по индексу.
-    # Порядок элементов в паре зависит от выражения списка.
-    pairs = [[k, v] for (k, v) in names.items()]    # здесь ключ имеет индекс 0, значение 1
-    #pairs = [[v, k] for (k, v) in names.items()]      # здесь ключ имеет индекс 1, значение 0
-    for n in range(0, N):
-        #print(pair[0], pair[1])
-        # n раз из списка пар достаётся случайная пара,
-        pair = random.choice(pairs)
-        # которая визуализируется с помощью lambda'ы. Легче не стало?
-        print(printNames(pair[0], pair[1]))
+    # ========================================================================
+    # Свойством называется такой метод класса, работа с которым
+    # подобна работе с атрибутом. Для объявления метода свойством
+    # используется декоратор @property.
+    # Преимуществом (???) работы через свойства является то, что можно
+    # осуществлять проверку входных значений, перед тем как присвоить
+    # их атрибутам. Ничто бесплатным не бывает. Вместо ОДНОГО метода нужны ДВА!
 
-    #getNamesList(pairs)
+    # Свойство аналогичное методу RealDatasFormer
+    @property
+    def RDF(self):
+        return self.__RDF
 
+    # Инициализатор свойства
+    @RDF.setter
+    def RDF(self, timeStr):
+        self.__RDF = datetime.strptime(timeStr, "%Y-%m-%d %H:%M:%S")
+    #                            год-месяц-день час:минута:секунда
 
+    # ====================================================================
 
-# ========================================================================
+    # То же самое вместо свойства делается ОДНИМ методом.
+    def RealDatasFormer(self, timeStr):
+        return datetime.strptime(timeStr, "%Y-%m-%d %H:%M:%S")
+    #                                 год-месяц-день час:минута:секунда
 
-def namesInitor(names, N = 100):
+    def lstStrDateBuilder(self, strKey):
 
-    lstNames = []
-    namesList = list(zip(names.keys(), names.values()))
+            # Фрагмент логовской строки с временнОй записью (начало строки ... запятая)
+            timeInfo = ''
+            for str in strKey:
+                if str == ',':
+                    break
+                else:
+                    # вот она формируется
+                    timeInfo = ''.join([timeInfo, str])
 
-    for n in range(0, N):
-        lstNames.append(random.choice(namesList))
+            # print(f'timeInfo: {timeInfo}')
+            # Сформированная строка подаётся на вход методу преобразования,
+            # далее объект-представитель класса datetime включается
+            # в глобальный список объектов
 
-    return lstNames
+            # Применение метода
+            LogsOrder.lstRealDate.append(self.RealDatasFormer(timeInfo))
 
-def fun_1(N = 100):
-    print(f'\nfun_1:')
-
-    resNames = []
-    frequencyArray = []
-    frequencyPairs = []
-
-    lstNames = namesInitor(names)
-
-    i = 0
-    for name in lstNames:
-        c = lstNames.count(name)
-        resNames.append([i, name, c])
-        go = True
-        while go == True:
-            try:
-                lstNames.remove(name)
-            except:
-                go = False
-        i += 1
-
-    for member in resNames:
-        frequencyArray.append(member[2])
-
-    frequencyArray.sort(reverse=True)
-
-    for n in frequencyArray:
-        for member in resNames:
-            if member[2] == n:
-                frequencyPairs.append(member)
-                resNames.remove(member)
-
-    # обычная распечатка frequencyPairs ==================================
-    # for pair in frequencyPairs:
-    #     print(pair[0], pair[1], pair[2])
-
-    # альтернативный вариант распечатки результата с применением функции reduce
-    printAll = reduce(lambda elem0, elem1: f'{elem0}\n {elem1}', frequencyPairs)
-    # результирующий список printAll
-    #          формируется с помощью функции reduce       на основе списка frequencyPairs
-    #                 алгоритм формирования printAll определяется функцией
-    #            lambda от ДВУХ агументов, которые входят в список frequencyPairs
-    #            и заключается в том, что из elem0 и elem1 формируются ДВЕ строки,
-    #            к которым добавляется очередной элемент из frequencyPairs.
-    #          стало легче писать? или, может быть, легче понимать? или читать?
-
-    print('', printAll)
-
-# ========================================================================
-
-def fun_2():
-    print(f'\nfun_2:')
-
-    firstLetters = []
-
-    namesList = list(zip(names.keys(), names.values()))
-    # print(namesList)
-
-    for i in range(0, len(namesList)):
-        nms = namesList[i]
-        nmStr = list(nms)
-        nmStr = (nmStr[0] + ' == ' + nmStr[1])
-        namesList[i] = nmStr
-
-    for i in range(0, len(namesList)):
-        print(f'{namesList[i]}')
-
-    print()
-
-    for nm in namesList:
-        firstLetters.append(nm[0])
-
-    firstLetters.sort()
-    print(firstLetters)
-
-    distinguishLetterArray = []
-
-    app = True
-    m = 0
-    i = 0
-    j = 0
-    lenFirstLetter = len(firstLetters)
-
-    for n in range(0, lenFirstLetter):
-        i=n
-
-        if i <= lenFirstLetter-2:
-            j=i+1
-        else:
-            break
-
-        if app == True:
-            distinguishLetterArrayInfo = [0, firstLetters[i], m]
-            distinguishLetterArray.append(distinguishLetterArrayInfo)
-            app = False
-
-        if firstLetters[i] != firstLetters[j]:
-            m += 1
-            distinguishLetterArrayInfo = [0, firstLetters[j], m]
-            distinguishLetterArray.append(distinguishLetterArrayInfo)
-        elif firstLetters[i] == firstLetters[j]:
-            ld = len(distinguishLetterArray) - 1
-            distinguishLetterArrayInfo = distinguishLetterArray[ld]
-            distinguishLetterArrayInfo[0] += 1
-
-    distinguishLetterArray.sort()
-
-    print('\n')
-    print('частота ', 'буква ', 'номер группы')
-    print('____________________________')
-    for dl in distinguishLetterArray:
-        print(f'{dl[0]+1}        {dl[1]}      {dl[2]}')
+            # Применение свойства для достижения аналогичного результата
+            # self.__RDF = timeInfo # сначала свойство инициализируется
+            # LogsOrder.lstRealDate.append(self.RDF) # потом применяется
 
 
+    def DoIt(self):
+        # На исходный лог из списка логов навесили индекс.
+        # В записи индекс идёт первым, за ним идёт лог.
+        i = 0
+        for str in self.lstStr:
+            # strC = copy.copy(str)
+            # indexedStrDate.append([i, [strC]])
+            LogsOrder.indexedStrDate.append([i, [str]])
+            i += 1
+
+            # Применение свойства ========================================
+            # self.__RDF = str  # Инициализация
+            # print(self.RDF)   # Представление значения
+            # ============================================================
+
+            self.lstStrDateBuilder(str)
+        # Получился проиндексированный список логов
+
+        # Статический список временнЫх объектов класса datetime построен.
+        # По порядку он совпадает с объектами списка логов.
+        # Теперь его нужно проиндексировать как и список исходных логов
+        i = 0
+        for dt in LogsOrder.lstRealDate:
+            # dtC = copy.copy(dt)
+            # indexedRealDate.append([i, [dtC]])
+            LogsOrder.indexedRealDate.append([i, [dt]])
+            i += 1
+        # Получился проиндексированный список временнЫх объектов
+
+        print('**********')
+        print(LogsOrder.indexedStrDate)
+        print('**********\n')
+        print('**********')
+        print(LogsOrder.indexedRealDate)
+        print('**********')
+
+        # Теперь - сортировка списка indexedRealDate по временнОму объекту
+        # В качестве первого аргумента функции быстрой сортировки используется
+        # глобальная переменная: ссылка на список indexedRealDate
+        # В него же записывается результат сортировки
+        LogsOrder.indexedRealDate = LogsOrder.quick_sort(LogsOrder.indexedRealDate)
+
+        print('**********')
+        print(LogsOrder.indexedRealDate)
+        print('**********\n')
+
+        # список логов переписывается в новом порядке, который задаётся
+        # отсортированным по временнОму элементу списком indexedRealDate. 
+        LogsOrder.NewOrder()
+        print('**********')
+        print(LogsOrder.newOrderedStrDate)
+        print('**********')
+
+    def __init__(self, inputFile):
+        LogsOrder.lstStr = []
+        with open(inputFile, 'r') as f:
+            LogsOrder.lstStr = f.readlines()
 
 # ========================================================================
 
 
 def main():
-    fun_0()
-    fun_1()
-    fun_2()
-
+    lgOrd = LogsOrder(inputFile)
+    lgOrd.DoIt()
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     main()
+
+
 
