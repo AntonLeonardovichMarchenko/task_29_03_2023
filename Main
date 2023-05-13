@@ -1,0 +1,211 @@
+"""
+1. Напишите функцию (F): на вход список имен и целое число N;
+   на выходе список длины N случайных имен из первого списка
+   (могут повторяться, можно взять значения: количество имен 20, N = 100,
+   рекомендуется использовать функцию random);
+
+2. Напишите функцию вывода самого частого имени из списка на выходе функции F;
+
+3. Напишите функцию вывода самой редкой буквы,
+   с которого начинаются имена в списке на выходе функции F.
+
+"""
+import random
+
+from functools import reduce
+
+
+names = {
+    'Каликс': 'самый_красивый', 'Адолфус': 'благородный_волк', 'Регулус': 'правильный',
+    'Рогэтус': 'желаемый', 'Ренэтус': 'заново_рождённый', 'Кастор': 'бобер',
+    'Ролло': 'знаменитый_волк', 'Ромулус': 'из_Рима_брат_Рема', 'Акуила': 'орёл', 'Руф': 'рыжий',
+    'Рем': 'из_Рима_брат_Ромулуса', 'Кастул': 'разрушитель', 'Рэмирус': 'мудрый',
+    'Климент': 'милостивый', 'Северин': 'строгий', 'Антониус': 'неоценимый', 'Аппиус': 'резкий',
+    'Сильвестр': 'лесной', 'Стратор': 'воин', 'Тибериус': 'из_реки_Тибр',
+    'Уалентин': 'сильный', 'Улисс': 'сердитый', 'Фиделис': 'верный', 'Цезарь': 'волосатый',
+    'Эмилий': 'усердный', 'Прискус': 'древний',
+    'Ленора':'дочь_льва', 'Люция': 'светлая', 'Грация': 'прелестная', 'Глория': 'слава',
+    'Фелицата': 'счастливая', 'Флора': 'цветок', 'Херта': 'сильная',
+    'Аккэлия': 'волчица', 'Патриция': 'знатная'
+}
+
+# def getNamesList (pairs, N = 100):
+#
+#     for n in range(0, N):
+#         print(n, ': ', random.choice(pairs))
+
+# типа с lambda'ой проще,чем с getNamesList??? да ну!
+printNames = lambda p, i: f'{i}, ": ", {p}'
+
+def fun_0(N = 100):
+    print(f'\nfun_0n:')
+
+    # работа непосредственно со словарём - 1
+    # lNames = list(names)    # словарь -> список ключей словаря
+    # for i in range(0, len(lNames)):
+    #     nm = lNames[i]
+    #     print(f'{nm}, {names[nm]}')
+
+    # работа непосредственно со словарём - 2
+    # keys = names.keys()  # словарь -> список ключей словаря
+    # for k in keys:
+    #     print(f'{k}, {names[k]}')
+
+
+    # С помощью выражения списка можно на основе словаря сформировать список пар
+    # (список списков), где ключ и значение в паре перестают играть роль 'ключ-значение',
+    # а становятся "равноправными" членами списка, к которым можно обращаться по индексу.
+    # Порядок элементов в паре зависит от выражения списка.
+    pairs = [[k, v] for (k, v) in names.items()]    # здесь ключ имеет индекс 0, значение 1
+    #pairs = [[v, k] for (k, v) in names.items()]      # здесь ключ имеет индекс 1, значение 0
+    for n in range(0, N):
+        #print(pair[0], pair[1])
+        # n раз из списка пар достаётся случайная пара,
+        pair = random.choice(pairs)
+        # которая визуализируется с помощью lambda'ы. Легче не стало?
+        print(printNames(pair[0], pair[1]))
+
+    #getNamesList(pairs)
+
+
+
+# ========================================================================
+
+def namesInitor(names, N = 100):
+
+    lstNames = []
+    namesList = list(zip(names.keys(), names.values()))
+
+    for n in range(0, N):
+        lstNames.append(random.choice(namesList))
+
+    return lstNames
+
+def fun_1(N = 100):
+    print(f'\nfun_1:')
+
+    resNames = []
+    frequencyArray = []
+    frequencyPairs = []
+
+    lstNames = namesInitor(names)
+
+    i = 0
+    for name in lstNames:
+        c = lstNames.count(name)
+        resNames.append([i, name, c])
+        go = True
+        while go == True:
+            try:
+                lstNames.remove(name)
+            except:
+                go = False
+        i += 1
+
+    for member in resNames:
+        frequencyArray.append(member[2])
+
+    frequencyArray.sort(reverse=True)
+
+    for n in frequencyArray:
+        for member in resNames:
+            if member[2] == n:
+                frequencyPairs.append(member)
+                resNames.remove(member)
+
+    # обычная распечатка frequencyPairs ==================================
+    # for pair in frequencyPairs:
+    #     print(pair[0], pair[1], pair[2])
+
+    # альтернативный вариант распечатки результата с применением функции reduce
+    printAll = reduce(lambda elem0, elem1: f'{elem0}\n {elem1}', frequencyPairs)
+    # результирующий список printAll
+    #          формируется с помощью функции reduce       на основе списка frequencyPairs
+    #                 алгоритм формирования printAll определяется функцией
+    #            lambda от ДВУХ агументов, которые входят в список frequencyPairs
+    #            и заключается в том, что из elem0 и elem1 формируются ДВЕ строки,
+    #            к которым добавляется очередной элемент из frequencyPairs.
+    #          стало легче писать? или, может быть, легче понимать? или читать?
+
+    print('', printAll)
+
+# ========================================================================
+
+def fun_2():
+    print(f'\nfun_2:')
+
+    firstLetters = []
+
+    namesList = list(zip(names.keys(), names.values()))
+    # print(namesList)
+
+    for i in range(0, len(namesList)):
+        nms = namesList[i]
+        nmStr = list(nms)
+        nmStr = (nmStr[0] + ' == ' + nmStr[1])
+        namesList[i] = nmStr
+
+    for i in range(0, len(namesList)):
+        print(f'{namesList[i]}')
+
+    print()
+
+    for nm in namesList:
+        firstLetters.append(nm[0])
+
+    firstLetters.sort()
+    print(firstLetters)
+
+    distinguishLetterArray = []
+
+    app = True
+    m = 0
+    i = 0
+    j = 0
+    lenFirstLetter = len(firstLetters)
+
+    for n in range(0, lenFirstLetter):
+        i=n
+
+        if i <= lenFirstLetter-2:
+            j=i+1
+        else:
+            break
+
+        if app == True:
+            distinguishLetterArrayInfo = [0, firstLetters[i], m]
+            distinguishLetterArray.append(distinguishLetterArrayInfo)
+            app = False
+
+        if firstLetters[i] != firstLetters[j]:
+            m += 1
+            distinguishLetterArrayInfo = [0, firstLetters[j], m]
+            distinguishLetterArray.append(distinguishLetterArrayInfo)
+        elif firstLetters[i] == firstLetters[j]:
+            ld = len(distinguishLetterArray) - 1
+            distinguishLetterArrayInfo = distinguishLetterArray[ld]
+            distinguishLetterArrayInfo[0] += 1
+
+    distinguishLetterArray.sort()
+
+    print('\n')
+    print('частота ', 'буква ', 'номер группы')
+    print('____________________________')
+    for dl in distinguishLetterArray:
+        print(f'{dl[0]+1}        {dl[1]}      {dl[2]}')
+
+
+
+# ========================================================================
+
+
+def main():
+    fun_0()
+    fun_1()
+    fun_2()
+
+
+# Press the green button in the gutter to run the script.
+if __name__ == '__main__':
+    main()
+
